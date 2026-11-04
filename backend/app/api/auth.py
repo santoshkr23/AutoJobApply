@@ -65,16 +65,17 @@ def user_out(db: DB, user: User) -> UserOut:
     )
 
 
-def set_session_cookies(response: Response, token: str, csrf: str, max_age: int, *, cookie_name: str = USER_COOKIE) -> None:
+def set_session_cookies(response: Response, token: str, csrf: str, max_age: int, *, cookie_name: str = USER_COOKIE,
+                        csrf_cookie: str = CSRF_COOKIE) -> None:
     s = get_settings()
     common = dict(max_age=max_age, secure=s.cookie_secure, samesite="lax", domain=s.cookie_domain, path="/")
     response.set_cookie(cookie_name, token, httponly=True, **common)
-    response.set_cookie(CSRF_COOKIE, csrf, httponly=False, **common)  # readable by the SPA for double-submit
+    response.set_cookie(csrf_cookie, csrf, httponly=False, **common)  # readable by the SPA for double-submit
 
 
-def clear_session_cookies(response: Response, *, cookie_name: str = USER_COOKIE) -> None:
+def clear_session_cookies(response: Response, *, cookie_name: str = USER_COOKIE, csrf_cookie: str = CSRF_COOKIE) -> None:
     response.delete_cookie(cookie_name, path="/")
-    response.delete_cookie(CSRF_COOKIE, path="/")
+    response.delete_cookie(csrf_cookie, path="/")
 
 
 def _issue_email_token(db: DB, user: User, purpose: str) -> str:

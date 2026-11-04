@@ -3,6 +3,7 @@
 import csv
 import io
 import uuid
+from datetime import datetime
 
 from fastapi import APIRouter, Depends, Query, Response
 from pydantic import BaseModel, Field
@@ -30,6 +31,7 @@ class CreateIn(BaseModel):
 class UpdateIn(BaseModel):
     status: str | None = None
     notes: str | None = Field(default=None, max_length=5000)
+    interview_at: datetime | None = None
 
 
 class CoverLetterIn(BaseModel):
@@ -45,7 +47,7 @@ def _app_row(a: Application, job: Job, source: str, score: int | None) -> dict:
         "needs_user_action": a.needs_user_action, "approved": a.approved_at is not None,
         "failure_code": a.failure_code, "failure_reason": a.failure_reason, "attempts": a.attempts,
         "submitted_at": a.submitted_at, "confirmation_ref": a.confirmation_ref, "notes": a.notes,
-        "created_at": a.created_at, "updated_at": a.updated_at, "is_sample": job.is_sample,
+        "interview_at": a.interview_at, "created_at": a.created_at, "updated_at": a.updated_at, "is_sample": job.is_sample,
     }
 
 
@@ -134,7 +136,9 @@ def export_rows(db, user) -> list[list]:
     out = []
     for a, j, src, score in rows:
         docs = {d.kind: d for d in svc.get_documents(db, a)}
-        path = lambda k: f"/api/applications/{a.id}/documents/{k}/pdf" if k in docs else ""  # noqa: E731
+        def path(k: str, a=a, docs=docs) -> str:
+            return f"/api/applications/{a.id}/documents/{k}/pdf" if k in docs else ""
+
         when = a.submitted_at or None
         out.append([str(j.id), j.company, j.title, j.location_text or "", _salary(j), score if score is not None else "", j.url, src,
                     j.description, path("resume"), path("cover_letter"), a.status, when.isoformat() if when else "",
@@ -221,6 +225,8 @@ def update(app_id: uuid.UUID, body: UpdateIn, db: DB, user: VerifiedUser) -> dic
         svc.user_set_status(db, user, a, body.status, body.notes)
     elif body.notes is not None:
         a.notes = body.notes
+    if body.interview_at is not None:
+        a.interview_at = body.interview_at
     db.commit()
     return _detail(db, user, a)
 

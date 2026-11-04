@@ -46,6 +46,7 @@ class Application(UUIDPk, Timestamps, SoftDelete, Base):
     failure_reason: Mapped[str | None] = mapped_column(Text)
     needs_user_action: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     notes: Mapped[str | None] = mapped_column(Text)
+    interview_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 class ApplicationEvent(UUIDPk, Base):
