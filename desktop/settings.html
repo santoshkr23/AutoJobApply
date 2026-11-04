@@ -1,0 +1,11 @@
+<!doctype html><meta charset="utf-8"><title>Server settings</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
+<body style="font-family:system-ui;max-width:520px;margin:12vh auto;padding:0 16px">
+<h2>Server address</h2>
+<p>Where your AutoJobApply platform runs (e.g. http://localhost:3000 or https://jobs.yourdomain.com).</p>
+<input id="u" style="width:100%;padding:8px"><p id="e" style="color:#b00"></p>
+<button id="b">Save and open</button>
+<script>
+desktop.getServer().then(v=>u.value=v);
+b.onclick=async()=>{const r=await desktop.setServer(u.value);if(!r.ok)e.textContent=r.error};
+</script>

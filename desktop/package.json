@@ -1,0 +1,23 @@
+{
+  "name": "autojobapply-desktop",
+  "version": "1.0.0",
+  "description": "Windows desktop wrapper for the AutoJobApply web platform",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test \"test/*.test.js\"",
+    "dist": "electron-builder --win nsis portable"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.autojobapply.desktop",
+    "productName": "AutoJobApply",
+    "files": ["main.js", "preload.js", "lib/**", "offline.html", "settings.html"],
+    "win": { "target": ["nsis", "portable"] },
+    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true }
+  }
+}

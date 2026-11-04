@@ -1,0 +1,111 @@
+# Local / single-server deployment.  Usage:
+#   cp .env.example .env   (set SECRET_KEY and ENCRYPTION_KEY - see README)
+#   docker compose up --build
+# Web app: http://localhost:3000   API docs: http://localhost:8000/api/docs   Mail inbox (dev): http://localhost:8025
+x-backend-env: &backend-env
+  ENVIRONMENT: ${ENVIRONMENT:-development}
+  SECRET_KEY: ${SECRET_KEY:?Set SECRET_KEY in .env (32+ random characters)}
+  ENCRYPTION_KEY: ${ENCRYPTION_KEY:-}
+  DATABASE_URL: postgresql+psycopg://career:${POSTGRES_PASSWORD:-career}@postgres:5432/career
+  REDIS_URL: redis://redis:6379/0
+  FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+  API_URL: ${API_URL:-http://localhost:3000}
+  CORS_ORIGINS: ${FRONTEND_URL:-http://localhost:3000}
+  COOKIE_SECURE: ${COOKIE_SECURE:-false}
+  STORAGE_BACKEND: s3
+  S3_ENDPOINT_URL: http://minio:9000
+  S3_BUCKET: ${S3_BUCKET:-career-agent}
+  S3_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
+  S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin}
+  AI_PROVIDER: ${AI_PROVIDER:-mock}
+  OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+  OPENAI_MODEL_DEFAULT: ${OPENAI_MODEL_DEFAULT:-gpt-4o-mini}
+  OPENAI_MODEL_ADVANCED: ${OPENAI_MODEL_ADVANCED:-gpt-4o}
+  EMAIL_PROVIDER: ${EMAIL_PROVIDER:-smtp}
+  SMTP_HOST: ${SMTP_HOST:-mailpit}
+  SMTP_PORT: ${SMTP_PORT:-1025}
+  SMTP_USER: ${SMTP_USER:-}
+  SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+  SMTP_STARTTLS: ${SMTP_STARTTLS:-false}
+  EMAIL_FROM: ${EMAIL_FROM:-AutoJobApply <no-reply@localhost>}
+  GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+  GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+  RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-}
+  RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-}
+  RAZORPAY_WEBHOOK_SECRET: ${RAZORPAY_WEBHOOK_SECRET:-}
+  STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+  STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+  BILLING_SANDBOX_ENABLED: ${BILLING_SANDBOX_ENABLED:-true}
+  ENABLE_MOCK_CONNECTOR: ${ENABLE_MOCK_CONNECTOR:-true}
+  ADZUNA_APP_ID: ${ADZUNA_APP_ID:-}
+  ADZUNA_APP_KEY: ${ADZUNA_APP_KEY:-}
+  AUTOMATION_ALLOWED_DOMAINS: ${AUTOMATION_ALLOWED_DOMAINS:-localhost,127.0.0.1}
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment: { POSTGRES_USER: career, POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-career}", POSTGRES_DB: career }
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck: { test: ["CMD-SHELL", "pg_isready -U career"], interval: 5s, timeout: 5s, retries: 10 }
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes: [redisdata:/data]
+    healthcheck: { test: ["CMD", "redis-cli", "ping"], interval: 5s, timeout: 3s, retries: 10 }
+    restart: unless-stopped
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment: { MINIO_ROOT_USER: "${MINIO_ROOT_USER:-minioadmin}", MINIO_ROOT_PASSWORD: "${MINIO_ROOT_PASSWORD:-minioadmin}" }
+    volumes: [miniodata:/data]
+    ports: ["127.0.0.1:9001:9001"]
+    restart: unless-stopped
+
+  minio-init:
+    image: minio/mc:latest
+    depends_on: [minio]
+    entrypoint: >
+      /bin/sh -c "until mc alias set local http://minio:9000 $${MINIO_ROOT_USER:-minioadmin} $${MINIO_ROOT_PASSWORD:-minioadmin}; do sleep 2; done;
+      mc mb --ignore-existing local/${S3_BUCKET:-career-agent}; mc anonymous set none local/${S3_BUCKET:-career-agent}"
+    environment: { MINIO_ROOT_USER: "${MINIO_ROOT_USER:-minioadmin}", MINIO_ROOT_PASSWORD: "${MINIO_ROOT_PASSWORD:-minioadmin}" }
+
+  mailpit:
+    image: axllent/mailpit:latest
+    ports: ["127.0.0.1:8025:8025"]
+    restart: unless-stopped
+
+  backend:
+    build: { context: ., dockerfile: backend/Dockerfile, target: api }
+    environment: *backend-env
+    depends_on: { postgres: { condition: service_healthy }, redis: { condition: service_healthy }, minio-init: { condition: service_completed_successfully } }
+    ports: ["127.0.0.1:8000:8000"]
+    restart: unless-stopped
+
+  worker:
+    build: { context: ., dockerfile: backend/Dockerfile, target: worker }
+    environment: *backend-env
+    depends_on: { backend: { condition: service_healthy } }
+    restart: unless-stopped
+
+  automation-worker:
+    build: { context: ., dockerfile: backend/Dockerfile, target: automation }
+    environment: *backend-env
+    depends_on: { backend: { condition: service_healthy } }
+    restart: unless-stopped
+
+  beat:
+    build: { context: ., dockerfile: backend/Dockerfile, target: beat }
+    environment: *backend-env
+    depends_on: { backend: { condition: service_healthy } }
+    restart: unless-stopped
+
+  frontend:
+    build: { context: ., dockerfile: frontend/Dockerfile, args: { BACKEND_URL: "http://backend:8000" } }
+    depends_on: { backend: { condition: service_healthy } }
+    ports: ["3000:3000"]
+    restart: unless-stopped
+
+volumes: { pgdata: {}, redisdata: {}, miniodata: {} }
