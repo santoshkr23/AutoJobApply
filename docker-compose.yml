@@ -18,12 +18,12 @@ x-backend-env: &backend-env
   OPENAI_API_KEY: ${OPENAI_API_KEY:-}
   OPENAI_MODEL_DEFAULT: ${OPENAI_MODEL_DEFAULT:-gpt-4o-mini}
   OPENAI_MODEL_ADVANCED: ${OPENAI_MODEL_ADVANCED:-gpt-4o}
-  EMAIL_PROVIDER: ${EMAIL_PROVIDER:-smtp}
-  SMTP_HOST: ${SMTP_HOST:-mailpit}
-  SMTP_PORT: ${SMTP_PORT:-1025}
-  SMTP_USER: ${SMTP_USER:-}
-  SMTP_PASSWORD: ${SMTP_PASSWORD:-}
-  SMTP_STARTTLS: ${SMTP_STARTTLS:-false}
+  EMAIL_PROVIDER: ${COMPOSE_EMAIL_PROVIDER:-smtp}
+  SMTP_HOST: ${COMPOSE_SMTP_HOST:-mailpit}
+  SMTP_PORT: ${COMPOSE_SMTP_PORT:-1025}
+  SMTP_USER: ${COMPOSE_SMTP_USER:-}
+  SMTP_PASSWORD: ${COMPOSE_SMTP_PASSWORD:-}
+  SMTP_STARTTLS: ${COMPOSE_SMTP_STARTTLS:-false}
   EMAIL_FROM: ${EMAIL_FROM:-AutoJobApply <no-reply@localhost>}
   GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
   GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
@@ -38,6 +38,8 @@ x-backend-env: &backend-env
   ADZUNA_APP_KEY: ${ADZUNA_APP_KEY:-}
   AUTOMATION_ALLOWED_DOMAINS: ${AUTOMATION_ALLOWED_DOMAINS:-localhost,127.0.0.1}
 
+# Email: defaults to the bundled Mailpit inbox. To use a real SMTP server set COMPOSE_EMAIL_PROVIDER=smtp,
+# COMPOSE_SMTP_HOST/PORT/USER/PASSWORD/STARTTLS in .env (the plain EMAIL_* names in .env are ignored by Docker).
 services:
   postgres:
     image: postgres:16-alpine
