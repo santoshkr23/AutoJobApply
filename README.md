@@ -2,7 +2,7 @@
 
 A SaaS platform that finds jobs matching your profile, scores them transparently, tailors a resume and cover letter **without inventing facts**, and - only with your explicit consent and per-application approval - helps submit applications. Every application is tracked honestly; the platform never fabricates a success.
 
-**Stack:** Next.js 14 (TypeScript, Tailwind) - FastAPI - SQLAlchemy/Alembic - PostgreSQL - Celery/Redis - Playwright - S3/MinIO - Razorpay/Stripe - Docker.
+**Stack:** Next.js 14 (TypeScript, Tailwind) - FastAPI - SQLAlchemy/Alembic - PostgreSQL - Celery/Redis - Playwright - S3-compatible storage - Razorpay/Stripe - Docker.
 
 Read [docs/STATUS.md](docs/STATUS.md) first: it lists what is tested and what is only an interface.
 
