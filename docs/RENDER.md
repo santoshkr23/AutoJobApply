@@ -7,6 +7,10 @@
 2. In Render: **New > Blueprint**, pick the repo. It creates: Postgres, Key Value (Redis), `autojobapply-api` (FastAPI) and `autojobapply-web` (Next.js).
 3. When asked for values marked "sync: false", leave them empty for now except `ENCRYPTION_KEY` (below). Click **Apply**.
 
+## Creating the services by hand instead of the Blueprint
+- API: Docker, Dockerfile Path `./backend/Dockerfile`, Build Context `.`, health check `/api/health`, plus the variables in `render.yaml`.
+- Web: Docker, Dockerfile Path `./frontend/Dockerfile`, Build Context `.`, and the variable **`BACKEND_URL`** = the API's URL (e.g. `https://autojobapply-api.onrender.com`). Without it every request from the site fails with a 502 "backend not configured / unreachable" message. It is read at runtime, so changing it needs only a restart, not a rebuild.
+
 ## 2. Fill the variables (API service > Environment), then redeploy it
 | Variable | Value |
 |---|---|

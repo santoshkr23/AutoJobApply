@@ -90,7 +90,8 @@ services:
     restart: unless-stopped
 
   frontend:
-    build: { context: ., dockerfile: frontend/Dockerfile, args: { BACKEND_URL: "http://backend:8000" } }
+    build: { context: ., dockerfile: frontend/Dockerfile }
+    environment: { BACKEND_URL: "http://backend:8000" }
     depends_on: { backend: { condition: service_healthy } }
     ports: ["3000:3000"]
     restart: unless-stopped
