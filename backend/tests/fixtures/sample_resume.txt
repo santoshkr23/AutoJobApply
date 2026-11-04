@@ -1,0 +1,30 @@
+Priya Sharma
+Senior Data Engineer
+priya.sharma@example.com | +91 98765 43210 | Pune, India
+linkedin.com/in/priya-sharma-demo
+
+SUMMARY
+Data engineer building cloud data platforms on Azure and Databricks.
+
+TECHNICAL SKILLS
+Python, SQL, PySpark, Azure Data Factory, Databricks, Delta Lake, Azure Synapse, Power BI, Git
+
+EXPERIENCE
+Senior Data Engineer | Contoso Analytics | Pune, India | Jan 2021 - Present
+- Built PySpark pipelines on Databricks that process 2 TB of data daily
+- Orchestrated ingestion with Azure Data Factory across 25 source systems
+- Designed Delta Lake medallion layers for finance reporting
+
+Data Engineer | Fabrikam Systems | Mumbai, India | Jun 2018 - Dec 2020
+- Developed SQL Server ETL jobs feeding a Power BI reporting layer
+- Automated deployment with Azure DevOps and Git
+
+EDUCATION
+B.Tech Computer Science, Savitribai Phule Pune University, 2014 - 2018
+
+CERTIFICATIONS
+DP-203 Azure Data Engineer Associate
+Databricks Certified Data Engineer Associate
+
+PROJECTS
+Retail Lakehouse: Delta Lake and PySpark pipeline for retail sales analytics

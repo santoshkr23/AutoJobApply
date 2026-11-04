@@ -1,0 +1,18 @@
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = [".", "../automation", "../workers"]
+asyncio_mode = "auto"
+addopts = "-q"
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "S"]
+ignore = ["S101", "B008", "E501", "S105", "S106", "S311"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S"]
+"alembic/*" = ["E", "I", "UP", "F401"]

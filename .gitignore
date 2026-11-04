@@ -1,0 +1,37 @@
+# secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+
+# node
+node_modules/
+.next/
+out/
+coverage/
+playwright-report/
+test-results/
+
+# local data
+/var/
+.local-storage/
+*.sqlite
+*.sqlite3
+*.log
+
+# os / editor
+.DS_Store
+.idea/
+.vscode/
