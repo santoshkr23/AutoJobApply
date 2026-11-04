@@ -11,7 +11,7 @@ Read [docs/STATUS.md](docs/STATUS.md) first: it lists what is tested and what is
 cp .env.example .env     # set SECRET_KEY and ENCRYPTION_KEY (commands inside the file)
 docker compose up --build
 ```
-Open http://localhost:3000. Dev emails appear at http://localhost:8025. More: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+Open http://localhost:3000. Dev emails appear at http://localhost:8025. More: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). Hosting on Render: [docs/RENDER.md](docs/RENDER.md).
 
 ## Quick start (without Docker)
 ```bash

@@ -9,8 +9,10 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY frontend/ ./
 ENV NEXT_TELEMETRY_DISABLED=1
 # The API proxy target is baked into the routing manifest at build time.
-ARG BACKEND_URL=http://backend:8000
+ARG BACKEND_URL=
 ENV BACKEND_URL=$BACKEND_URL
+ARG BACKEND_HOSTPORT=
+ENV BACKEND_HOSTPORT=$BACKEND_HOSTPORT
 RUN npm run build
 
 FROM node:22-alpine AS run

@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
-const backend = process.env.BACKEND_URL || "http://localhost:8000";
+// BACKEND_URL (full URL) or BACKEND_HOSTPORT ("host:port", as provided by Render's private network).
+const backend = process.env.BACKEND_URL || (process.env.BACKEND_HOSTPORT ? `http://${process.env.BACKEND_HOSTPORT}` : "http://localhost:8000");
 
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
