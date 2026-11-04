@@ -56,6 +56,30 @@ export default function Onboarding() {
     }, 1500);
   }, []);
 
+  // Pick up where the person left off (page refresh, closed tab) instead of asking for the resume again.
+  const resumed = useRef(false);
+  useEffect(() => {
+    if (loading || !user || resumed.current) return;
+    resumed.current = true;
+    (async () => {
+      try {
+        const list = await api("/resumes");
+        const r = Array.isArray(list) ? list[0] : null;
+        if (!r) return;
+        setResumeId(r.id);
+        if (r.parse_status === "pending" || r.parse_status === "parsing") { setStep(1); startPolling(r.id); return; }
+        if (r.parse_status === "failed") { await api(`/resumes/${r.id}`, { method: "DELETE" }).catch(() => undefined); setResumeId(null); return; }
+        const full = await api(`/resumes/${r.id}`);
+        setProfile({ ...emptyProfile(), ...full.parsed_data, country: full.parsed_data?.country ?? null });
+        if (r.parse_status === "confirmed") {
+          const pr = await api("/preferences").catch(() => null);
+          if (pr) setPrefs((p) => ({ ...p, ...Object.fromEntries(Object.entries(pr).filter(([, v]) => v !== null && v !== undefined)) }));
+          setStep(3);
+        } else setStep(2);
+      } catch { /* start from the beginning */ }
+    })();
+  }, [loading, user, startPolling]);
+
   async function upload(file: File) {
     setErr(null); setBusy(true);
     try {
