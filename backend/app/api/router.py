@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 
-from app.api import auth, files, health, jobs, matches, me, profile, resumes
+from app.api import applications, auth, files, health, jobs, matches, me, profile, resumes
 from app.core.config import get_settings
 from app.core.ratelimit import rate_limit
 
@@ -12,4 +12,5 @@ api_router.include_router(profile.router)
 api_router.include_router(resumes.router)
 api_router.include_router(jobs.router)
 api_router.include_router(matches.router)
+api_router.include_router(applications.router)
 api_router.include_router(files.router)

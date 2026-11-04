@@ -153,3 +153,8 @@ def auth_b(client):
 
 
 FIXTURES = Path(__file__).parent / "fixtures"
+
+
+# --- browser automation tests use the pre-installed Chromium when available
+if Path("/opt/pw-browsers").exists():
+    os.environ.setdefault("PLAYWRIGHT_BROWSERS_PATH", "/opt/pw-browsers")

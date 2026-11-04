@@ -8,7 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.models.base import Base, JSONType, SoftDelete, Timestamps, UUIDPk
 
 
-class ApplicationStatus(str, enum.Enum):
+class ApplicationStatus(enum.StrEnum):
     DISCOVERED = "DISCOVERED"
     MATCHED = "MATCHED"
     RESUME_GENERATED = "RESUME_GENERATED"

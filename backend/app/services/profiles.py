@@ -27,7 +27,7 @@ def profile_to_dict(p: UserProfile) -> dict:
         "headline": p.headline,
         "summary": p.summary,
         "skills": list(p.skills or []),
-        "experience": list(p.experience or []),
+        "experience": [{**e, "id": e.get("id") or f"exp{i}"} for i, e in enumerate(p.experience or [])],
         "education": list(p.education or []),
         "certifications": list(p.certifications or []),
         "projects": list(p.projects or []),
