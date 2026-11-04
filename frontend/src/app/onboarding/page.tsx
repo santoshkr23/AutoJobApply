@@ -9,15 +9,25 @@ import { Alert, Spinner } from "@/components/ui/feedback";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProfileEditor, cleanProfile, emptyProfile, type ProfileData } from "@/components/profile-editor";
 import { Logo } from "@/components/public-shell";
+import { ListInput } from "@/components/list-input";
+import { parseCountries } from "@/lib/countries";
 import { api, errorMessage } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
+
+function suggestTitles(p: ProfileData): string[] {
+  const out: string[] = [];
+  for (const t of [p.headline, ...(p.experience ?? []).map((e) => e.title)]) {
+    const v = (t ?? "").trim();
+    if (v && v.length <= 60 && !out.some((x) => x.toLowerCase() === v.toLowerCase())) out.push(v);
+  }
+  return out.slice(0, 3);
+}
 
 const STEPS = ["Upload resume", "Extraction", "Verify details", "Preferences", "Match threshold", "Consent"];
 const MODES = ["remote", "hybrid", "onsite"];
 
 type Prefs = { target_titles: string[]; required_skills: string[]; countries: string[]; cities: string[]; work_modes: string[]; salary_min: number | null; salary_currency: string; needs_visa_sponsorship: boolean; open_to_relocation: boolean; min_match_score: number };
-const csv = (s: string) => s.split(",").map((x) => x.trim()).filter(Boolean);
 
 export default function Onboarding() {
   const router = useRouter();
@@ -58,7 +68,13 @@ export default function Onboarding() {
   async function confirmProfile() {
     if (!resumeId) return;
     setBusy(true); setErr(null);
-    try { await api(`/resumes/${resumeId}/confirm`, { body: cleanProfile(profile) }); setStep(3); }
+    try { await api(`/resumes/${resumeId}/confirm`, { body: cleanProfile(profile) });
+      setPrefs((p) => ({
+        ...p,
+        target_titles: p.target_titles.length ? p.target_titles : suggestTitles(profile),
+        required_skills: p.required_skills.length ? p.required_skills : (profile.skills ?? []).slice(0, 8),
+      }));
+      setStep(3); }
     catch (e) { setErr(errorMessage(e)); } finally { setBusy(false); }
   }
 
@@ -114,11 +130,11 @@ export default function Onboarding() {
         {step === 3 && (
           <Card><CardHeader><CardTitle>Job preferences</CardTitle><CardDescription>Used to filter and score jobs. You can change these any time.</CardDescription></CardHeader>
             <CardContent className="space-y-4">
-              <Field label="Target job titles" htmlFor="pf-t" hint="Comma separated"><Input id="pf-t" value={prefs.target_titles.join(", ")} onChange={(e) => setPrefs({ ...prefs, target_titles: csv(e.target.value) })} /></Field>
-              <Field label="Must-have skills" htmlFor="pf-s" hint="Comma separated"><Input id="pf-s" value={prefs.required_skills.join(", ")} onChange={(e) => setPrefs({ ...prefs, required_skills: csv(e.target.value) })} /></Field>
+              <Field label="Target job titles" htmlFor="pf-t" hint="Separate with commas, e.g. Data Engineer, Azure Data Engineer"><ListInput id="pf-t" value={prefs.target_titles} onChange={(v) => setPrefs({ ...prefs, target_titles: v })} /></Field>
+              <Field label="Must-have skills" htmlFor="pf-s" hint="Separate with commas. Prefilled from your resume; remove any that are not essential."><ListInput id="pf-s" value={prefs.required_skills} onChange={(v) => setPrefs({ ...prefs, required_skills: v })} /></Field>
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Countries" htmlFor="pf-c" hint="Two-letter codes, e.g. IN, US"><Input id="pf-c" value={prefs.countries.join(", ")} onChange={(e) => setPrefs({ ...prefs, countries: csv(e.target.value) })} /></Field>
-                <Field label="Cities" htmlFor="pf-ci"><Input id="pf-ci" value={prefs.cities.join(", ")} onChange={(e) => setPrefs({ ...prefs, cities: csv(e.target.value) })} /></Field>
+                <Field label="Countries" htmlFor="pf-c" hint="Country names or codes, e.g. India, Japan, US"><ListInput id="pf-c" value={prefs.countries} parse={(t) => parseCountries(t).codes} onChange={(v) => setPrefs({ ...prefs, countries: v })} /></Field>
+                <Field label="Cities" htmlFor="pf-ci" hint="Separate with commas"><ListInput id="pf-ci" value={prefs.cities} onChange={(v) => setPrefs({ ...prefs, cities: v })} /></Field>
                 <Field label="Minimum salary (per year)" htmlFor="pf-sa"><Input id="pf-sa" type="number" min={0} value={prefs.salary_min ?? ""} onChange={(e) => setPrefs({ ...prefs, salary_min: e.target.value ? Number(e.target.value) : null })} /></Field>
                 <Field label="Currency" htmlFor="pf-cu"><Input id="pf-cu" maxLength={3} value={prefs.salary_currency} onChange={(e) => setPrefs({ ...prefs, salary_currency: e.target.value.toUpperCase() })} /></Field>
               </div>
